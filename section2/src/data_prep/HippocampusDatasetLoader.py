@@ -38,8 +38,7 @@ def LoadHippocampusData(root_dir, y_shape, z_shape):
         image, _ = load(os.path.join(image_dir, f))
         label, _ = load(os.path.join(label_dir, f))
 
-        # TASK: normalize all images (but not labels) so that values are in [0..1] range
-        # <YOUR CODE GOES HERE>
+        # normalize all images (but not labels) so that values are in [0..1] range
         image = image.astype(np.single)/np.max(image)
 
         # We need to reshape data since CNN tensors that represent minibatches
@@ -49,13 +48,9 @@ def LoadHippocampusData(root_dir, y_shape, z_shape):
         # Note that since we feed individual slices to the CNN, we only need to 
         # extend 2 dimensions out of 3. We choose to extend coronal and sagittal here
 
-        # TASK: med_reshape function is not complete. Go and fix it!
+        # med_reshape function is not complete. Go and fix it!
         image = med_reshape(image, new_shape=(image.shape[0], y_shape, z_shape))
         label = med_reshape(label, new_shape=(label.shape[0], y_shape, z_shape)).astype(int)
-
-        # TASK: Why do we need to cast label to int?
-        # ANSWER: Because we need different integers as different class for CNN model.
-
 
         out.append({"image": image, "seg": label, "filename": f})
 
