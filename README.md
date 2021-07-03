@@ -75,13 +75,4 @@ Specifically, we have the following software in this setup:
 - **[./section3/arc/deploy_scripts/send_volume.sh](./section3/src/deploy_scripts/send_volume.sh):** Test the algorithm by running this file
 
 
-## Results
-
-<center><img src="./section2/Train_Val_loss_Tensorboard.png" width="1000" height="800"/></center>
-<center><img src="./section2/probability_map.png" width="1000" height="800"/></center>
-<center><img src="./section3/out/OHIF_Visualization2.png" width="1000" height="800"/></center>
-<center><img src="./section3/out/OHIF_Visualization4.png" width="1000" height="800"/></center>
-<center><img src="./section3/out/OHIF_Visualization5.png" width="1000" height="800"/></center>
-
-
 
