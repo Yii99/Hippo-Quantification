@@ -6,6 +6,8 @@ import numpy as np
 
 from networks.RecursiveUNet import UNet
 
+from utils.utils import med_reshape
+
 class UNetInferenceAgent:
     """
     Stores model and parameters and some methods to handle inferencing
@@ -35,12 +37,20 @@ class UNetInferenceAgent:
         Returns:
             3D NumPy array with prediction mask
         """
+        
         x, y, z = volume.shape
-        padded_shape = (x, self.patch_size, self.patch_size)
-        padded_volume = np.zeros(padded_shape)
-        padded_volume[:x, :y, :z] = volume
-               
-        return self.single_volume_inference(padded_volume)
+        new_shape= (x, self.patch_size, self.patch_size)
+        new_volume = med_reshape(volume, new_shape)
+        slices = np.zeros(new_volume.shape)
+        for slice_idx in range(new_volume.shape[0]):
+            slc = new_volume[slice_idx,:,:]
+            slice = torch.from_numpy(slc.astype(np.single)/np.max(slc)).unsqueeze(0).unsqueeze(0).to(self.device)
+            prediction = self.model(slice)
+            prediction = np.squeeze(prediction).cpu().detach()
+            slices[slice_idx,:,:] = torch.argmax(prediction, dim=0)
+        return slices
+        
+
 
     def single_volume_inference(self, volume):
         """
@@ -55,22 +65,19 @@ class UNetInferenceAgent:
         self.model.eval()
 
         # Assuming volume is a numpy array of shape [X,Y,Z] and we need to slice X axis
+        # slices = []
+
+        # Create mask for each slice across the X (0th) dimension. After
+        # that, put all slices into a 3D Numpy array. 
+
         slices = np.zeros(volume.shape)
+        for slice_index in range(volume.shape[0]):
+            slc = volume[slice_index,:,:]
+            slc = slc.astype(np.single)/np.max(slc)
+            slice = torch.from_numpy(slc).unsqueeze(0).unsqueeze(0).to(self.device)
+            prediction = self.model(slice)
+            prediction = np.squeeze(prediction.cpu().detach())
+            slices[slice_index,:,:] = torch.argmax(prediction, dim=0)
 
-        # TASK: Write code that will create mask for each slice across the X (0th) dimension. After 
-        # that, put all slices into a 3D Numpy array. You can verify if your method is 
-        # correct by running it on one of the volumes in your training set and comparing 
-        # with the label in 3D Slicer.
-        
-        with torch.no_grad():
-            for i, slice_img in enumerate(volume):
-                # Convert slice to torch tensor
-                slice_img_tensor = torch.from_numpy(slice_img).float().unsqueeze(0).unsqueeze(0).to(self.device)
-                
-                # Get prediction from the model
-                predicion = self.model(slice_img_tensor)
-                predicion = np.squeeze(predicion.cpu().detach())
 
-                # Add the result to our slices
-                slices[i, :, :] = torch.argmax(predicion, dim = 0)                
         return slices
